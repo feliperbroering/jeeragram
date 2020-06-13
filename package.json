@@ -1,12 +1,12 @@
 {
   "name": "telegram-jira",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./src/index.js",
   "repository": "https://github.com/feliperbroering/telegram-jira.git",
   "author": "Felipe R. Broering <felipe.broering@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js",
+    "start": "node ./src/index.js",
     "deploy": "gcloud functions deploy telegram-jira --memory=256mb --runtime=nodejs10 --project=felipe-run --trigger-http --timeout=30s"
   },
   "dependencies": {
