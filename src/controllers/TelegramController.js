@@ -3,12 +3,25 @@ const TelegramBot = require("node-telegram-bot-api");
 const telegram = new TelegramBot(process.env.TELEGRAM_JIRA_BOT_TOKEN);
 
 notifyTelegram = async (request) => {
-  const { issue, webhookEvent, changelog } = request.body;
+  const { issue, webhookEvent, changelog, comment, sprint } = request.body;
   const n = `<pre>\n</pre>`;
-  const jiraURL = `${process.env.TELEGRAM_JIRA_JIRA_URL}/browse/${issue.key}`;  
-  const issueInfo = `<a href="${jiraURL}">${issue.key}: ${issue.fields.summary}</a>`
-  const changed = `<pre><code class="language-JSON">${JSON.stringify(changelog.items, null, 4)}</code></pre>`
-  let message = `${issueInfo}${n}${webhookEvent}:${changed}`;
+  let issueInfo = "";
+  if (issue){
+    const jiraURL = `${process.env.TELEGRAM_JIRA_JIRA_URL}/browse/${issue.key}`;  
+    issueInfo = `<a href="${jiraURL}">${issue.key}: ${issue.fields.summary}</a>${n}`
+  }
+  let details = "{}";
+  if (webhookEvent.startsWith("jira:issue")){
+    details = JSON.stringify(changelog.items, null, 4);
+  }
+  else if (webhookEvent.startsWith("comment")){
+    details = JSON.stringify(comment, null, 4);
+  }
+  else if (webhookEvent.startsWith("sprint")){
+    details = JSON.stringify(sprint, null, 4);
+  }
+  const detailsInfo = `<pre><code class="language-JSON">${details}</code></pre>`
+  let message = `${issueInfo}${webhookEvent}:${detailsInfo}`;
   telegram.sendMessage(
     process.env.TELEGRAM_JIRA_CHAT_IDS,
     message,
