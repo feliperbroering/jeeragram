@@ -1,4 +1,23 @@
 const axios = require('axios');
+const TelegramBot = require("node-telegram-bot-api");
+const telegram = new TelegramBot(process.env.TELEGRAM_JIRA_BOT_TOKEN);
+
+notifyTelegram = async (request) => {
+  const { issue, webhookEvent, changelog } = request.body;
+  const n = `<pre>\n</pre>`;
+  const jiraURL = `${process.env.TELEGRAM_JIRA_JIRA_URL}/browse/${issue.key}`;  
+  const issueInfo = `<a href="${jiraURL}">${issue.key}: ${issue.fields.summary}</a>`
+  const changed = `<pre><code class="language-JSON">${JSON.stringify(changelog.items, null, 4)}</code></pre>`
+  let message = `${issueInfo}${n}${webhookEvent}:${changed}`;
+  telegram.sendMessage(
+    process.env.TELEGRAM_JIRA_CHAT_IDS,
+    message,
+    {
+      parse_mode: "HTML",
+      disable_web_page_preview: true
+    }
+  );
+};
 
 const TelegramController = {
 
@@ -33,7 +52,11 @@ const TelegramController = {
         console.log(responseMessage);
         response.status(500).send(responseMessage);
       });
-  }  
+  },
+
+  sendMessage: async (request) => {
+    notifyTelegram(request);
+  }
 
 };
 

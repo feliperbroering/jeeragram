@@ -11,4 +11,6 @@ app.use(express.json());
 
 app.use(routes);
 
+app.listen('3000');
+
 exports.main = app;
