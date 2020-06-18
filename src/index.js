@@ -15,4 +15,4 @@ app.listen('3000', () => {
   console.log("🚀 Telegram-jira service started.");
 });
 
-exports.main = app;
+exports.jeeragram = app;
