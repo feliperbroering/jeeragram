@@ -11,6 +11,8 @@ app.use(express.json());
 
 app.use(routes);
 
-app.listen('3000');
+app.listen('3000', () => {
+  console.log("🚀 Telegram-jira service started.");
+});
 
 exports.main = app;

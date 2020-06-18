@@ -6,7 +6,7 @@
   "author": "Felipe R. Broering <felipe.broering@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "node ./src/index.js",
+    "dev": "nodemon",
     "deploy": "gcloud functions deploy telegram-jira --memory=256mb --runtime=nodejs10 --project=felipe-run --trigger-http --timeout=30s"
   },
   "dependencies": {
@@ -14,5 +14,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "node-telegram-bot-api": "^0.50.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
   }
 }

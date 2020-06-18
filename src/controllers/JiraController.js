@@ -3,9 +3,9 @@ const TelegramController = require("./TelegramController");
 
 const JiraController = {
   hook: async (request, response) => {
-    console.log(`Jiiira message:`, JSON.stringify(request.body));
+    console.log(`Jira message:`, JSON.stringify(request.body));
     await TelegramController.sendMessage(request);
-    response.status(200).send(`Jiiira webhook received!`);
+    return response.json({ message: `Jira webhook received! Sent to telegram!` });
   },
 
   setWebhook: async (request, response) => {
@@ -42,17 +42,26 @@ const JiraController = {
     let responseMessage;
     try {
       const jiraResponse = await jiraAPI.post(`/webhooks/1.0/webhook`, webhook);
-      responseMessage = `Jira webhook created! ${JSON.stringify(jiraResponse.data)}`;
-      console.log(responseMessage);
-      response.status(jiraResponse.status).send(responseMessage);
+      responseMessage = `Jira webhook created!`;
+      console.log(responseMessage, JSON.stringify(jiraResponse.data));
+      return response.json({
+        message: responseMessage, 
+        jiraStatus: jiraResponse.status, 
+        jiraResponse: jiraResponse.data
+      });
     }
     catch (error) {
-      let errMsg;
-      if (error.response) errMsg = error.response.data;
-      else errMsg = error.message
-      responseMessage = `Can't set Jira webhook. Error: ${JSON.stringify(errMsg)}`;
-      console.log(responseMessage);
-      response.status(500).send(responseMessage);
+      let errorData;
+      if (error.response) 
+        errorData = error.response.data;
+      else 
+        errorData = error.message
+      responseMessage = `Can't set Jira webhook.`;
+      console.log(responseMessage, JSON.stringify(errorData) );
+      return response.status(500).json({
+        message: responseMessage,
+        jiraResponse: errorData
+      });
     }
 
   }
