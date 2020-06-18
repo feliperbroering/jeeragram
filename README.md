@@ -13,13 +13,7 @@ Extend [Jira](https://www.atlassian.com/software/jira) powers with the convenien
 * Create Jira issue
 * Issue chat: create new chat with team members to discuss some issue and store comments on jira comments
 
-## Dev to-dos
-1. Google cloud function env vars file to easy deploy
-1. Security hashes for Jira and Telegram webhooks
-1. Render messages in a pretty way (today I send as JSON)
-1. Implement jira issue get info
-1. Mock Jira and Telegram webhooks payload to easy local tests
-1. Implement tests
 
+Look projects tab to see what I'm working on.
 
 Feel free to contribute and send PRs.
