@@ -12,8 +12,6 @@ Extend [Jira](https://www.atlassian.com/software/jira) powers with the convenien
 * Configs: easy way to choose witch jira events for what telegram chat
 * Create Jira issue
 * Issue chat: create new chat with team members to discuss some issue and store comments on jira comments
-
-
-Look projects tab to see what I'm working on.
+* Look at [kanban board](https://github.com/feliperbroering/jeeragram/projects/1) to see what I'm working on.
 
 Feel free to contribute and send PRs.
