@@ -1,2 +1,2 @@
-# telegram-jira
+# Jeeeeeeragrammm
 Telegram bot for JIRA
