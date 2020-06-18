@@ -22,3 +22,5 @@ tsconfig.json
 *.lock
 *.log
 *.md
+*.env
+*.yaml

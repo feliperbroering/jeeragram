@@ -1,6 +1,6 @@
 const axios = require('axios');
 const TelegramBot = require("node-telegram-bot-api");
-const telegram = new TelegramBot(process.env.TELEGRAM_JIRA_BOT_TOKEN);
+const telegram = new TelegramBot(process.env.JEERAGRAM_BOT_TOKEN);
 
 telegram.on('message', msg => {
   const echoMsg = `<pre><code class="language-JSON">${JSON.stringify(msg, null, 4)}</code></pre>`
@@ -12,7 +12,7 @@ notifyTelegram = async (request) => {
   const n = `<pre>\n</pre>`;
   let issueInfo = "";
   if (issue){
-    const jiraURL = `${process.env.TELEGRAM_JIRA_JIRA_URL}/browse/${issue.key}`;  
+    const jiraURL = `${process.env.JEERAGRAM_JIRA_URL}/browse/${issue.key}`;  
     issueInfo = `<a href="${jiraURL}">${issue.key}: ${issue.fields.summary}</a>${n}`
   }
   let details = "{}";
@@ -29,7 +29,7 @@ notifyTelegram = async (request) => {
   const detailsInfo = `<pre><code class="language-JSON">${details}</code></pre>`
   let message = `${issueInfo}${webhookEvent}:${detailsInfo}`;
   telegram.sendMessage(
-    process.env.TELEGRAM_JIRA_CHAT_IDS,
+    process.env.JEERAGRAM_CHAT_IDS,
     message,
     {
       parse_mode: "HTML",
@@ -48,8 +48,8 @@ const TelegramController = {
 
   setWebhook: async (request, response) => {
 
-    const botWebhook = `https://api.telegram.org/bot${process.env.TELEGRAM_JIRA_BOT_TOKEN}/setWebhook`;
-    const appURL = `${process.env.TELEGRAM_JIRA_APP_URL}/telegram`;
+    const botWebhook = `https://api.telegram.org/bot${process.env.JEERAGRAM_BOT_TOKEN}/setWebhook`;
+    const appURL = `${process.env.JEERAGRAM_APP_URL}/telegram`;
     console.log(botWebhook);
     console.log(appURL);
     let responseMessage;

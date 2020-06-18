@@ -1,0 +1,10 @@
+ #!/bin/bash
+set -e
+
+gcloud functions deploy jeeragram \
+    --memory=256mb \
+    --runtime=nodejs10 \
+    --project=google-cloud-project-here \
+    --timeout=90s \
+    --trigger-http \
+    --env-vars-file=env.yaml

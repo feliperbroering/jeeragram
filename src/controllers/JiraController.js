@@ -10,9 +10,9 @@ const JiraController = {
 
   setWebhook: async (request, response) => {
     //https://developer.atlassian.com/cloud/jira/platform/webhooks/
-    const appURLJira = `${process.env.TELEGRAM_JIRA_APP_URL}/jira`;
+    const appURLJira = `${process.env.JEERAGRAM_APP_URL}/jira`;
     const webhook = {
-      "name": "Telegram-Jira Webhook",
+      "name": "Jeeragram Webhook",
       "url": appURLJira,
       "events": [
         "jira:issue_created",
@@ -31,11 +31,11 @@ const JiraController = {
     };
 
     const jiraAPI = axios.create({
-      baseURL: `${process.env.TELEGRAM_JIRA_JIRA_URL}/rest`,
+      baseURL: `${process.env.JEERAGRAM_JIRA_URL}/rest`,
       headers: { 'Accept': 'application/json' },
       auth: {
-        username: process.env.TELEGRAM_JIRA_JIRA_USER,
-        password: process.env.TELEGRAM_JIRA_JIRA_TOKEN
+        username: process.env.JEERAGRAM_JIRA_USER,
+        password: process.env.JEERAGRAM_JIRA_TOKEN
       }
     });
 

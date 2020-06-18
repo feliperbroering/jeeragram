@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon",
-    "deploy": "gcloud functions deploy jeeragram --memory=256mb --runtime=nodejs10 --project=felipe-run --trigger-http --timeout=30s"
+    "deploy": "./deploy.sh"
   },
   "dependencies": {
     "axios": "^0.19.2",
