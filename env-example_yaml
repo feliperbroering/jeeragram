@@ -1,5 +1,5 @@
 JEERAGRAM_APP_URL: https://region-project.cloudfunctions.net/jeeragram
-JEERAGRAM_BOT_TOKEN: telegram bot toke
+JEERAGRAM_BOT_TOKEN: telegram bot token
 JEERAGRAM_CHAT_IDS: "allowed chat ids (at this moment only one is supported)"
 JEERAGRAM_JIRA_URL: https://yourjirasite.atlassian.net/
 JEERAGRAM_JIRA_USER: jira user email
