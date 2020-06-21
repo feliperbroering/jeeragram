@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(routes);
 
 app.listen('3000', () => {
-  console.log("🚀 Telegram-jira service started.");
+  console.log("🚀 Jeeragram service started.");
 });
 
 exports.jeeragram = app;

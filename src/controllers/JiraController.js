@@ -1,11 +1,61 @@
 const axios = require('axios');
 const TelegramController = require("./TelegramController");
 
+const n = `<pre>\n</pre>`;
+
+const JiraWebhookParser = {
+  issue: (action, details) => {
+    console.log(`Parsing message for ${details.webhookEvent}`);
+    const { user, issue, changelog } = details;
+
+    const userActionInfo = `${user.displayName} ${action} the issue`;
+    const jiraURL = `${process.env.JEERAGRAM_JIRA_URL}/browse/${issue.key}`;
+    const issueInfo = `<a href="${jiraURL}">${issue.fields.issuetype.name}: ${issue.key} ${issue.fields.summary}</a>${n}`
+
+    let changed = "";
+    changelog.items.forEach(item => {
+      const { field, fromString, toString } = item;
+      changed += `<b>${field}</b> from <i>${fromString}</i> → <code>${toString}</code>${n}`;
+    })
+
+    return message = `${userActionInfo} ${issueInfo}${n}${changed}`;
+  },
+
+  comment: (action, details) => {
+    console.log(`Parsing message for ${details.webhookEvent}`); 
+    const { issue, comment } = details;
+    const { updateAuthor } = comment;
+
+    const userActionInfo = `💬 ${updateAuthor.displayName} ${action} a comment on`;
+
+    const jiraURL = `${process.env.JEERAGRAM_JIRA_URL}/browse/${issue.key}`;
+    const issueInfo = `<a href="${jiraURL}">${issue.fields.issuetype.name}: ${issue.key} ${issue.fields.summary}</a>${n}`
+
+    const commentInfo = `<i>${comment.body}</i>`
+
+    return message = `${userActionInfo} ${issueInfo}${n}${commentInfo}`;
+  }
+}
+
 const JiraController = {
   hook: async (request, response) => {
     console.log(`Jira message:`, JSON.stringify(request.body));
-    await TelegramController.sendMessage(request);
-    return response.json({ message: `Jira webhook received! Sent to telegram!` });
+    const details = request.body;
+    const { webhookEvent } = details;
+    const entity = webhookEvent.split('_')[0].replace(/jira:/g, '');
+    const action = webhookEvent.split('_')[1];
+    parser = JiraWebhookParser[entity];
+    if (parser){
+      const message = parser(action, details);
+      await TelegramController.sendMessage(message);
+      return response.json({ message: `Jira webhook received! Sent to telegram!` });
+    }
+    else {
+      const message = `Parser not yet implemented for ${details.webhookEvent} 🙄${n}`;
+      const detailsJSON = `<pre><code class="language-JSON">${JSON.stringify(details, null, 4)}</code></pre>`;
+      await TelegramController.sendMessage(`${message}${detailsJSON}`);
+      return response.json(message);
+    }
   },
 
   setWebhook: async (request, response) => {
