@@ -11,7 +11,7 @@ const TelegramController = {
 
   hook: async (request, response) => {
     console.log(`Telegram message:`, JSON.stringify(request.body));
-    telegram.processUpdate(request.body);
+    //telegram.processUpdate(request.body);
     return response.json({ message: `Telegram webhook received!` });
   },
 
