@@ -1,10 +1,101 @@
-const axios = require('axios');
 const TelegramController = require("./TelegramController");
+const axios = require('axios');
 
 const n = `<pre>\n</pre>`;
+class JiraMarkdownParser {
+
+  constructor(text){
+    this._text = text;
+    this._regexUsers = /\[~accountid:([\S]+)\]/gm;
+    this._regexBracketsElement = /\[([^\]]*) \]/gm;
+    this._regexCurlyBraketsElement = /{([^}]*)}/gm;
+    this._regexImagesElements = /!([^!]*)!/gm;
+    this._regexItalic = /_([^_]*)_/gm;
+    this._regexBold = /\*([^\*]*)\*/gm;  
+  }
+
+  text() {
+    return this._text;
+  }
+
+  parseLinks() {
+
+  }
+
+  parseImages() {
+    this._text = this._text.replace(this._regexImagesElements, '');
+    return this;
+  }
+
+  getUsersAccountIds(){
+    let keys = this._text.match(this._regexUsers);
+    let users = [];
+    if ( keys && keys.length > 0) {
+      users = keys.map(key => {
+        return key.replace('[~accountid:', '').replace(']', '');
+      });
+    }
+    return users;
+  }
+
+  parseUsers(users) {
+    users.forEach(user => {
+      this._text = this._text.replace(`[~accountid:${user.accountId}]`, user.displayName);
+    });
+    return this;
+  }  
+
+};
+
+const getJiraUsers = async (usersAccountIds) => {
+
+  const jiraAPI = axios.create({
+    baseURL: `${process.env.JEERAGRAM_JIRA_URL}/rest/api/3`,
+    headers: { 'Accept': 'application/json' },
+    auth: {
+      username: process.env.JEERAGRAM_JIRA_USER,
+      password: process.env.JEERAGRAM_JIRA_TOKEN
+    }
+  });
+
+  let usersQuery = usersAccountIds.map(id => {
+    return `accountId=${id}`
+  });
+  usersQuery = usersQuery.join('&');  
+
+  try {
+    const jiraResponse = await jiraAPI.get(`/user/bulk?${usersQuery}`);
+    console.log(`Get Jira users: `, JSON.stringify(jiraResponse.data));
+    if ( jiraResponse.data )
+      return jiraResponse.data.values;
+    else
+      return null;
+  }
+  catch (error) {
+    let errorData;
+    if (error.response)
+      errorData = error.response.data;
+    else
+      errorData = error.message
+    console.log(`Can't get Jira users: ${usersQuery}.`, JSON.stringify(errorData));
+    return null;
+  }    
+};
+
+const parseJiraMarkdown = async (originalJiraText) => {
+  const parser = new JiraMarkdownParser(originalJiraText);
+  parser.parseImages();
+  const usersAccountIds = parser.getUsersAccountIds();
+  if ( usersAccountIds.length > 0 ) {
+    const users = await getJiraUsers(usersAccountIds);
+    parser.parseUsers(users);
+  }
+  console.log(parser.text());
+  return parser.text();
+}
 
 const JiraWebhookParser = {
-  issue: (action, details) => {
+  issue: async (action, details) => {
     console.log(`Parsing message for ${details.webhookEvent}`);
     const { user, issue, changelog } = details;
 
@@ -13,15 +104,21 @@ const JiraWebhookParser = {
     const issueInfo = `<a href="${jiraURL}">${issue.fields.issuetype.name}: ${issue.key} ${issue.fields.summary}</a>${n}`
 
     let changed = "";
-    changelog.items.forEach(item => {
-      const { field, fromString, toString } = item;
-      changed += `<b>${field}</b> from <i>${fromString}</i> → <code>${toString}</code>${n}`;
-    })
+    for (let i = 0; i < changelog.items.length; i++) {
+      const { field, fromString, toString } = changelog.items[i];
+      let toStringParsed = toString;
+      let fromStringParsed = fromString;
+      if (field === 'description') {
+        toStringParsed = await parseJiraMarkdown(toString);
+        fromStringParsed = await parseJiraMarkdown(fromString);
+      }
+      changed += `<b>${field}</b> from <i>${fromStringParsed}</i> → <code>${toStringParsed}</code>${n}`;      
+    }
 
     return message = `${userActionInfo} ${issueInfo}${n}${changed}`;
   },
 
-  comment: (action, details) => {
+  comment: async (action, details) => {
     console.log(`Parsing message for ${details.webhookEvent}`); 
     const { issue, comment } = details;
     const { updateAuthor } = comment;
@@ -31,7 +128,8 @@ const JiraWebhookParser = {
     const jiraURL = `${process.env.JEERAGRAM_JIRA_URL}/browse/${issue.key}`;
     const issueInfo = `<a href="${jiraURL}">${issue.fields.issuetype.name}: ${issue.key} ${issue.fields.summary}</a>${n}`
 
-    const commentInfo = `<i>${comment.body}</i>`
+    const parsedComment = await parseJiraMarkdown(comment.body);
+    const commentInfo = `<i>${parsedComment}</i>`
 
     return message = `${userActionInfo} ${issueInfo}${n}${commentInfo}`;
   }
@@ -44,9 +142,9 @@ const JiraController = {
     const { webhookEvent } = details;
     const entity = webhookEvent.split('_')[0].replace(/jira:/g, '');
     const action = webhookEvent.split('_')[1];
-    parser = JiraWebhookParser[entity];
+    parser = await JiraWebhookParser[entity];
     if (parser){
-      const message = parser(action, details);
+      const message = await parser(action, details);
       await TelegramController.sendMessage(message);
       return response.json({ message: `Jira webhook received! Sent to telegram!` });
     }
