@@ -7,7 +7,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon",
-    "deploy": "./deploy.sh"
+    "deploy": "./deploy.sh",
+    "deploy:all": "./deploy_all.sh"
   },
   "dependencies": {
     "axios": "^0.19.2",

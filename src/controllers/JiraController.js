@@ -7,11 +7,11 @@ class JiraMarkdownParser {
   constructor(text){
     this._text = text;
     this._regexUsers = /\[~accountid:([\S]+)\]/gm;
-    this._regexBracketsElement = /\[([^\]]*) \]/gm;
-    this._regexCurlyBraketsElement = /{([^}]*)}/gm;
-    this._regexImagesElements = /!([^!]*)!/gm;
+    this._regexImages = /!([^!]*)!/gm;
+    this._regexLinks = /\[([^\]]*)\|([^\]]*)\]/gm;
     this._regexItalic = /_([^_]*)_/gm;
     this._regexBold = /\*([^\*]*)\*/gm;  
+    this._regexCode = /({.+})(.+)({.+})/gm;
   }
 
   text() {
@@ -19,11 +19,55 @@ class JiraMarkdownParser {
   }
 
   parseLinks() {
+    let m;
+    let regex = this._regexLinks;
+    while ((m = regex.exec(this._text)) !== null) {
+      if (m.index === regex.lastIndex) {
+        regex.lastIndex++;
+      }
+      const htmlLink = `<a href="${m[2]}">${m[1]}</a>`
+      this._text = this._text.replace(m[0], htmlLink);
+    }
+  }
 
+  parseBold() {
+    let m;
+    let regex = this._regexBold;
+    while ((m = regex.exec(this._text)) !== null) {
+      if (m.index === regex.lastIndex) {
+        regex.lastIndex++;
+      }
+      const htmlBold = `<b>${m[1]}</b>`
+      this._text = this._text.replace(m[0], htmlBold);
+    }
+  }
+
+  parseItalic() {
+    let m;
+    let regex = this._regexItalic;
+    while ((m = regex.exec(this._text)) !== null) {
+      if (m.index === regex.lastIndex) {
+        regex.lastIndex++;
+      }
+      const htmlItalic = `<i>${m[1]}</i>`
+      this._text = this._text.replace(m[0], htmlItalic);
+    }
+  }
+
+  parseCode() {
+    let m;
+    let regex = this._regexCode;
+    while ((m = regex.exec(this._text)) !== null) {
+      if (m.index === regex.lastIndex) {
+        regex.lastIndex++;
+      }
+      const htmlCode = `<code>${m[2]}</code>`
+      this._text = this._text.replace(m[0], htmlCode);
+    }
   }
 
   parseImages() {
-    this._text = this._text.replace(this._regexImagesElements, '');
+    this._text = this._text.replace(this._regexImages, '');
     return this;
   }
 
@@ -89,6 +133,10 @@ const parseJiraMarkdown = async (originalJiraText) => {
 
   const parser = new JiraMarkdownParser(originalJiraText);
   parser.parseImages();
+  parser.parseLinks();
+  parser.parseBold();
+  parser.parseItalic();
+  parser.parseCode();
   const usersAccountIds = parser.getUsersAccountIds();
   if ( usersAccountIds.length > 0 ) {
     const users = await getJiraUsers(usersAccountIds);
@@ -133,9 +181,8 @@ const JiraWebhookParser = {
     const issueInfo = `<a href="${jiraURL}">${issue.fields.issuetype.name}: ${issue.key} ${issue.fields.summary}</a>${n}`
 
     const parsedComment = await parseJiraMarkdown(comment.body);
-    const commentInfo = `<i>${parsedComment}</i>`
 
-    return message = `${userActionInfo} ${issueInfo}${n}${commentInfo}`;
+    return message = `${userActionInfo} ${issueInfo}${n}${parsedComment}`;
   }
 }
 
