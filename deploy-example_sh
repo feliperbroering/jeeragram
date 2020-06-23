@@ -1,6 +1,10 @@
  #!/bin/bash
 set -e
 
+gcloud config set account your@here.com
+
+gcloud config set project google-cloud-project-here
+
 gcloud functions deploy jeeragram \
     --memory=256mb \
     --runtime=nodejs10 \
