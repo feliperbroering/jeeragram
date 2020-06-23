@@ -83,6 +83,10 @@ const getJiraUsers = async (usersAccountIds) => {
 };
 
 const parseJiraMarkdown = async (originalJiraText) => {
+  
+  if (!originalJiraText)
+    return null;
+
   const parser = new JiraMarkdownParser(originalJiraText);
   parser.parseImages();
   const usersAccountIds = parser.getUsersAccountIds();
